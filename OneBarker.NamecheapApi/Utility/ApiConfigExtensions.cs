@@ -94,7 +94,7 @@ public static class ApiConfigExtensions
             err.Add("ApiUri is not a valid URI.");
         }
 
-        if (config is IApiRequest request)
+        if (config is IApiCommand request)
         {
             if (string.IsNullOrWhiteSpace(request.Command))
             {

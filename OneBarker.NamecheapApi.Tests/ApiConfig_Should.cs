@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using OneBarker.NamecheapApi.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,9 +10,9 @@ public class ApiConfig_Should
 {
     private readonly ITestOutputHelper _output;
 
-    private class TestRequest : IApiRequest
+    private class TestCommand : IApiCommand
     {
-        public TestRequest(IApiConfig config, string command)
+        public TestCommand(IApiConfig config, string command)
         {
             Host     = config.Host;
             ApiUri   = config.ApiUri;
@@ -34,7 +31,7 @@ public class ApiConfig_Should
         public string ClientIp { get; }
         public string Command  { get; }
 
-        public IEnumerable<KeyValuePair<string, string>> GetAdditionalParameters() => Array.Empty<KeyValuePair<string, string>>();
+        public IEnumerable<KeyValuePair<string, string>> AdditionalParameters => Array.Empty<KeyValuePair<string, string>>();
     }
 
 
@@ -157,7 +154,7 @@ public class ApiConfig_Should
     [InlineData("012345678901234567890123456789012345678901234567890123456789012345678901234567890")]
     public void RejectInvalidCommands(string command)
     {
-        var testConfig = new TestRequest(Config.ApiConfig, command);
+        var testConfig = new TestCommand(Config.ApiConfig, command);
         var valid      = testConfig.IsValid(out var errors);
         Assert.False(valid);
         _output.WriteLine("  " + string.Join("\n  ", errors));
