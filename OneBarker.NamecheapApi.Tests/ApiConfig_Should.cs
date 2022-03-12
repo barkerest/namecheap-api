@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using OneBarker.NamecheapApi.Utility;
@@ -10,6 +12,31 @@ namespace OneBarker.NamecheapApi.Tests;
 public class ApiConfig_Should
 {
     private readonly ITestOutputHelper _output;
+
+    private class TestRequest : IApiRequest
+    {
+        public TestRequest(IApiConfig config, string command)
+        {
+            Host     = config.Host;
+            ApiUri   = config.ApiUri;
+            ApiUser  = config.ApiUser;
+            ApiKey   = config.ApiKey;
+            UserName = config.UserName;
+            ClientIp = config.ClientIp;
+            Command  = command;
+        }
+
+        public string Host     { get; }
+        public string ApiUri   { get; }
+        public string ApiUser  { get; }
+        public string ApiKey   { get; }
+        public string UserName { get; }
+        public string ClientIp { get; }
+        public string Command  { get; }
+
+        public IEnumerable<KeyValuePair<string, string>> GetAdditionalParameters() => Array.Empty<KeyValuePair<string, string>>();
+    }
+
 
     public ApiConfig_Should(ITestOutputHelper outputHelper)
     {
@@ -122,5 +149,19 @@ public class ApiConfig_Should
         _output.WriteLine("  " + string.Join("\n  ", errors));
         Assert.Equal(1, errors.Length);
         Assert.Contains(errors, x => x.StartsWith("ClientIP"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("012345678901234567890123456789012345678901234567890123456789012345678901234567890")]
+    public void RejectInvalidCommands(string command)
+    {
+        var testConfig = new TestRequest(Config.ApiConfig, command);
+        var valid      = testConfig.IsValid(out var errors);
+        Assert.False(valid);
+        _output.WriteLine("  " + string.Join("\n  ", errors));
+        Assert.Equal(1, errors.Length);
+        Assert.Contains(errors, x => x.StartsWith("Command"));
     }
 }

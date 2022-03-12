@@ -93,7 +93,18 @@ public static class ApiConfigExtensions
         {
             err.Add("ApiUri is not a valid URI.");
         }
-        
+
+        if (config is IApiRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Command))
+            {
+                err.Add("Command is not set.");
+            }
+            else if (request.Command.Length > 80)
+            {
+                err.Add("Command is limited to 80 characters.");
+            }
+        }
         
         errors = err.ToArray();
 
