@@ -29,7 +29,7 @@ public class Create_Should
         // default blank values are commented out.
         return new Create(Config.ApiConfigWithLogging(_output))
         {
-            DomainName = "onebarker-dev-002.com",
+            DomainName = "onebarker-dev.com",
             YearsToRegister = 2,
             //PromotionCode = "",
             Registrant =
