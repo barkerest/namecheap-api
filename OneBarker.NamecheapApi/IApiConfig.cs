@@ -1,4 +1,6 @@
-﻿namespace OneBarker.NamecheapApi;
+﻿using Microsoft.Extensions.Logging;
+
+namespace OneBarker.NamecheapApi;
 
 /// <summary>
 /// The base configuration for API requests.
@@ -47,5 +49,9 @@ public interface IApiConfig
     /// This should normally be your public IP address.
     /// </remarks>
     public string ClientIp { get; }
-}
 
+    /// <summary>
+    /// The logger factory to use in execution.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; }
+}

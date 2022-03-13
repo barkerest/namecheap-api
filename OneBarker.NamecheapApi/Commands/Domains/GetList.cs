@@ -1,9 +1,11 @@
-﻿namespace OneBarker.NamecheapApi.Commands.Domains;
+﻿using OneBarker.NamecheapApi.Results.Domains;
+
+namespace OneBarker.NamecheapApi.Commands.Domains;
 
 /// <summary>
 /// Get a list of domains for the configured user.
 /// </summary>
-public class GetList : CommandBase
+public class GetList : CommandBase, IApiCommand<GetListResult>
 {
     private int     _pageSize = 20;
     private string? _searchTerm;

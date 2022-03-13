@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace OneBarker.NamecheapApi;
 
@@ -14,8 +16,9 @@ public class ApiConfig : IApiConfig
     /// <param name="apiUser"></param>
     /// <param name="apiKey"></param>
     /// <param name="clientIp"></param>
-    public ApiConfig(string host, string apiUser, string apiKey, IPAddress clientIp)
-        : this(host, apiUser, apiKey, clientIp.ToString())
+    /// <param name="loggerFactory"></param>
+    public ApiConfig(string host, string apiUser, string apiKey, IPAddress clientIp, ILoggerFactory? loggerFactory = null)
+        : this(host, apiUser, apiKey, clientIp.ToString(), loggerFactory)
     {
         
     }
@@ -27,15 +30,16 @@ public class ApiConfig : IApiConfig
     /// <param name="apiUser"></param>
     /// <param name="apiKey"></param>
     /// <param name="clientIp"></param>
-    public ApiConfig(string host, string apiUser, string apiKey, string clientIp)
-        
+    /// <param name="loggerFactory"></param>
+    public ApiConfig(string host, string apiUser, string apiKey, string clientIp, ILoggerFactory? loggerFactory = null)
     {
-        Host     = host;
-        ApiUser  = apiUser;
-        UserName = apiUser;
-        ApiKey   = apiKey;
-        ClientIp = clientIp;
-        ApiUri   = $"https://{Host}/xml.response";
+        Host          = host;
+        ApiUser       = apiUser;
+        UserName      = apiUser;
+        ApiKey        = apiKey;
+        ClientIp      = clientIp;
+        LoggerFactory = loggerFactory ?? new NullLoggerFactory();
+        ApiUri        = $"https://{Host}/xml.response";
     }
 
     /// <inheritdoc />
@@ -55,4 +59,7 @@ public class ApiConfig : IApiConfig
 
     /// <inheritdoc />
     public string ClientIp { get; }
+
+    /// <inheritdoc />
+    public ILoggerFactory LoggerFactory { get; }
 }

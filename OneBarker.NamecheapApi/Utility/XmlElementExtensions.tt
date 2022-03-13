@@ -1,0 +1,170 @@
+﻿<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+<#
+    var conversions = new (string Label, string Type)[]
+    {
+        ("Boolean", "bool"),
+        ("Int8", "sbyte"),
+        ("UInt8", "byte"),
+        ("Int16", "short"),
+        ("UInt16", "ushort"),
+        ("Int32", "int"),
+        ("UInt32", "uint"),
+        ("Int64", "long"),
+        ("UInt64", "ulong"),
+        ("Float", "float"),
+        ("Double", "double"),
+        ("Decimal", "decimal"),
+        ("DateTime", "DateTime"),
+        ("Guid", "Guid"),
+    };
+#>
+
+using System.Xml;
+
+namespace OneBarker.NamecheapApi.Utility;
+
+/// <summary>
+/// Extension methods for XmlElements.
+/// </summary>
+public static class XmlElementExtensions
+{
+    /// <summary>
+    /// Gets the content of the element.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <returns></returns>
+    public static string GetContent(this XmlElement element) => element.InnerText.Trim();
+
+    /// <summary>
+    /// Gets the content of the child element with the specified name.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public static string GetChildContent(this XmlElement element, string name)
+        => element.ChildNodes
+                  .OfType<XmlElement>()
+                  .FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                  ?.InnerText ?? "";
+    
+    /// <summary>
+    /// Gets the specified child element.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <typeparam name="TChild"></typeparam>
+    /// <returns></returns>
+    public static XmlElement? GetChild(this XmlElement element, string name)
+         => element.ChildNodes
+                   .OfType<XmlElement>()
+                   .FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+    
+    /// <summary>
+    /// Gets the specified child element as the specified type.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <typeparam name="TChild"></typeparam>
+    /// <returns></returns>
+    public static TChild? GetChildAs<TChild>(this XmlElement element, string name) where TChild : class, IXmlParseable, new()
+    {
+        var child = element.GetChild(name);
+        if (child is null) return null;
+        var ret = new TChild();
+        ret.LoadFromXmlElement(child);
+        return ret;
+    }
+
+    /// <summary>
+    /// Convert this element into the specified type.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <typeparam name="TDest"></typeparam>
+    /// <returns></returns>
+    public static TDest To<TDest>(this XmlElement element) where TDest : class, IXmlParseable, new()
+    {
+        var ret = new TDest();
+        ret.LoadFromXmlElement(element);
+        return ret;
+    }
+    
+    /// <summary>
+    /// Returns the value of the attribute with the specified name.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static TEnum GetAttributeAsEnum<TEnum>(this XmlElement element, string name, TEnum defaultValue = default) where TEnum : struct
+    {
+        if (!typeof(TEnum).IsEnum) throw new InvalidOperationException("TEnum must be an enum type.");
+        return Enum.TryParse<TEnum>(element.GetAttribute(name), true, out var result) ? result : defaultValue;
+    }
+
+    /// <summary>
+    /// Gets the content of the element.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static TEnum GetContentAsEnum<TEnum>(this XmlElement element, TEnum defaultValue = default) where TEnum : struct
+    {
+        if (!typeof(TEnum).IsEnum) throw new InvalidOperationException("TEnum must be an enum type.");
+        return Enum.TryParse<TEnum>(element.GetContent(), true, out var result) ? result : defaultValue;
+    }   
+    
+    /// <summary>
+    /// Gets the content of the named child element.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static TEnum GetChildContentAsEnum<TEnum>(this XmlElement element, string name, TEnum defaultValue = default) where TEnum : struct
+    {
+        if (!typeof(TEnum).IsEnum) throw new InvalidOperationException("TEnum must be an enum type.");
+        return Enum.TryParse<TEnum>(element.GetChildContent(name), true, out var result) ? result : defaultValue;
+    }   
+
+<#
+    foreach (var (label, type) in conversions)
+    {
+#>
+    /// <summary>
+    /// Returns the value of the attribute with the specified name.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static <#= type #> GetAttributeAs<#= label #>(this XmlElement element, string name, <#= type #> defaultValue = default)
+        => <#= type #>.TryParse(element.GetAttribute(name), out var result) ? result : defaultValue;
+
+    /// <summary>
+    /// Gets the content of the element.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static <#= type #> GetContentAs<#= label #>(this XmlElement element, <#= type #> defaultValue = default)
+        => <#= type #>.TryParse(element.GetContent(), out var result) ? result : defaultValue;
+    
+    /// <summary>
+    /// Gets the content of the named child element.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="name"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static <#= type #> GetChildContentAs<#= label #>(this XmlElement element, string name, <#= type #> defaultValue = default)
+        => <#= type #>.TryParse(element.GetChildContent(name), out var result) ? result : defaultValue;
+
+<#
+    }
+#>
+}
+

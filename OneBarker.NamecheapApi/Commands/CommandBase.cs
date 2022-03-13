@@ -1,17 +1,20 @@
-﻿namespace OneBarker.NamecheapApi.Commands;
+﻿using Microsoft.Extensions.Logging;
+
+namespace OneBarker.NamecheapApi.Commands;
 
 /// <summary>
 /// The base command class.
 /// </summary>
 public abstract class CommandBase : IApiCommand
 {
-    private readonly string _host;
-    private readonly string _apiUri;
-    private readonly string _apiUser;
-    private readonly string _apiKey;
-    private readonly string _userName;
-    private readonly string _clientIp;
-    private readonly string _command;
+    private readonly string         _host;
+    private readonly string         _apiUri;
+    private readonly string         _apiUser;
+    private readonly string         _apiKey;
+    private readonly string         _userName;
+    private readonly string         _clientIp;
+    private readonly string         _command;
+    private readonly ILoggerFactory _loggerFactory;
 
     /// <summary>
     /// Initialize the base command configuration.
@@ -20,13 +23,14 @@ public abstract class CommandBase : IApiCommand
     /// <param name="command"></param>
     protected CommandBase(IApiConfig config, string command)
     {
-        _host     = config.Host;
-        _apiUri   = config.ApiUri;
-        _apiUser  = config.ApiUser;
-        _apiKey   = config.ApiKey;
-        _userName = config.UserName;
-        _clientIp = config.ClientIp;
-        _command  = command;
+        _host          = config.Host;
+        _apiUri        = config.ApiUri;
+        _apiUser       = config.ApiUser;
+        _apiKey        = config.ApiKey;
+        _userName      = config.UserName;
+        _clientIp      = config.ClientIp;
+        _loggerFactory = config.LoggerFactory;
+        _command       = command;
     }
 
     /// <inheritdoc />
@@ -52,6 +56,10 @@ public abstract class CommandBase : IApiCommand
     /// <inheritdoc />
     string IApiConfig.ClientIp
         => _clientIp;
+
+    /// <inheritdoc />
+    ILoggerFactory IApiConfig.LoggerFactory
+        => _loggerFactory;
 
     /// <inheritdoc />
     string IApiCommand.Command

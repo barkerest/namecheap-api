@@ -3,15 +3,43 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
+using Xunit.Extensions.Logging;
 
 namespace OneBarker.NamecheapApi.Tests;
 
 public static class Config
 {
+    private class ApiConfigWrapper : IApiConfig
+    {
+        public ApiConfigWrapper(IApiConfig config, ITestOutputHelper testOutputHelper)
+        {
+            Host          = config.Host;
+            ApiUri        = config.ApiUri;
+            ApiUser       = config.ApiUser;
+            ApiKey        = config.ApiKey;
+            UserName      = config.UserName;
+            ClientIp      = config.ClientIp;
+            LoggerFactory = new LoggerFactory();
+            LoggerFactory.AddProvider(new XunitLoggerProvider(testOutputHelper, (_,_) => true));
+        }
+        public string         Host          { get; }
+        public string         ApiUri        { get; }
+        public string         ApiUser       { get; }
+        public string         ApiKey        { get; }
+        public string         UserName      { get; }
+        public string         ClientIp      { get; }
+        public ILoggerFactory LoggerFactory { get; }
+    }
+    
     private static HttpClient     WebClient       { get; }
     public static  IPAddress      PublicIpAddress { get; }
     public static  IConfiguration Configuration   { get; }
     public static  IApiConfig     ApiConfig       { get; }
+    
+    public static IApiConfig ApiConfigWithLogging(ITestOutputHelper testOutputHelper)
+        => new ApiConfigWrapper(ApiConfig, testOutputHelper);
     
     static Config()
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using OneBarker.NamecheapApi.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,22 +15,24 @@ public class ApiConfig_Should
     {
         public TestCommand(IApiConfig config, string command)
         {
-            Host     = config.Host;
-            ApiUri   = config.ApiUri;
-            ApiUser  = config.ApiUser;
-            ApiKey   = config.ApiKey;
-            UserName = config.UserName;
-            ClientIp = config.ClientIp;
-            Command  = command;
+            Host          = config.Host;
+            ApiUri        = config.ApiUri;
+            ApiUser       = config.ApiUser;
+            ApiKey        = config.ApiKey;
+            UserName      = config.UserName;
+            ClientIp      = config.ClientIp;
+            LoggerFactory = config.LoggerFactory;
+            Command       = command;
         }
 
-        public string Host     { get; }
-        public string ApiUri   { get; }
-        public string ApiUser  { get; }
-        public string ApiKey   { get; }
-        public string UserName { get; }
-        public string ClientIp { get; }
-        public string Command  { get; }
+        public string         Host          { get; }
+        public string         ApiUri        { get; }
+        public string         ApiUser       { get; }
+        public string         ApiKey        { get; }
+        public string         UserName      { get; }
+        public string         ClientIp      { get; }
+        public ILoggerFactory LoggerFactory { get; }
+        public string         Command       { get; }
 
         public IEnumerable<KeyValuePair<string, string>> AdditionalParameters => Array.Empty<KeyValuePair<string, string>>();
     }
