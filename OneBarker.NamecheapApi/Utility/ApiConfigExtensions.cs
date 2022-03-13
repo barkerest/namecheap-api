@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 
 namespace OneBarker.NamecheapApi.Utility;
 
@@ -104,6 +105,9 @@ public static class ApiConfigExtensions
             {
                 err.Add("Command is limited to 80 characters.");
             }
+
+            var validator = CommandValidator.FindOrCreate(request);
+            validator.Validate(request, err);
         }
         
         errors = err.ToArray();

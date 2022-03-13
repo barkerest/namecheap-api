@@ -1,4 +1,5 @@
-﻿using OneBarker.NamecheapApi.Results.Domains;
+﻿using System.ComponentModel.DataAnnotations;
+using OneBarker.NamecheapApi.Results.Domains;
 
 namespace OneBarker.NamecheapApi.Commands.Domains;
 
@@ -7,9 +8,6 @@ namespace OneBarker.NamecheapApi.Commands.Domains;
 /// </summary>
 public class GetList : CommandBase, IApiCommand<GetListResult>
 {
-    private int     _pageSize = 20;
-    private string? _searchTerm;
-
     /// <summary>
     /// Create a new command.
     /// </summary>
@@ -27,16 +25,8 @@ public class GetList : CommandBase, IApiCommand<GetListResult>
     /// <summary>
     /// The number of records per page (10-100).
     /// </summary>
-    public int PageSize
-    {
-        get => _pageSize;
-        set
-        {
-            if (value is < 10 or > 100) throw new ArgumentOutOfRangeException(nameof(value), "PageSize must be between 10 and 100.");
-            _pageSize = value;
-        }
-        
-    }
+    [Range(10, 100)]
+    public int PageSize { get; set; } = 20;
 
     /// <summary>
     /// The type of records to return.
@@ -51,18 +41,8 @@ public class GetList : CommandBase, IApiCommand<GetListResult>
     /// <summary>
     /// A keyword to look for in the domain list.
     /// </summary>
-    public string? SearchTerm
-    {
-        get => _searchTerm;
-        set
-        {
-            if (value is not null &&
-                value.Length > 70)
-                throw new ArgumentException("SearchTerm is limited to 70 characters.", nameof(value));
-            
-            _searchTerm = value;
-        }
-    }
+    [StringLength(70)]
+    public string SearchTerm { get; set; } = "";
 
     protected override IEnumerable<KeyValuePair<string, string>> GetAdditionalParameters()
     {
@@ -70,9 +50,6 @@ public class GetList : CommandBase, IApiCommand<GetListResult>
         yield return new KeyValuePair<string, string>("PageSize", PageSize.ToString());
         yield return new KeyValuePair<string, string>("ListType", ListType.ToString().ToUpper());
         yield return new KeyValuePair<string, string>("SortBy", SortBy.ToString().ToUpper());
-        if (!string.IsNullOrWhiteSpace(SearchTerm))
-        {
-            yield return new KeyValuePair<string, string>("SearchTerm", SearchTerm);
-        }
+        if (!string.IsNullOrWhiteSpace(SearchTerm)) yield return new KeyValuePair<string, string>("SearchTerm", SearchTerm);
     }
 }

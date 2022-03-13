@@ -16,6 +16,8 @@ public static class ApiCommandExtensions
     /// </summary>
     private static readonly HttpClient Client = new();
 
+    // TODO: Rate limiting?
+
     
     /// <summary>
     /// Gets the request URI for the command.
@@ -53,13 +55,18 @@ public static class ApiCommandExtensions
         return uriBuilder.ToString();
     }
     
-    // TODO: Rate limiting?
-
-    private static async Task<XmlElement> ExecuteForXmlAsync(this IApiCommand command, ILogger logger)
+    private static async Task<XmlElement> ExecuteGetForXmlAsync(this IApiCommand command, ILogger logger)
     {
-        var uri = command.ToRequestUri();
+        if (!command.IsValid(out var errors))
+        {
+            throw new ArgumentException("The command is not valid:\n  " + string.Join("\n  ", errors));
+        }
         
-        logger.LogDebug($"Sending request\n{command.ToRequestUri(true)}");
+        var uri = command.ToRequestUri();
+        if (uri.Length > 2048)
+            logger.LogWarning("Request URI is over 2048 characters in length.");
+        
+        logger.LogDebug($"Sending request via GET\n{command.ToRequestUri(true)}");
         var response    = await Client.GetStringAsync(uri);
         
         logger.LogDebug("Parsing XML response...");
@@ -70,6 +77,57 @@ public static class ApiCommandExtensions
             throw new XmlException("No XML content generated.");
         
         return xml.DocumentElement;
+    }
+
+    private static async Task<XmlElement> ExecutePostForXmlAsync(this IApiCommand command, ILogger logger)
+    {
+        if (!command.IsValid(out var errors))
+        {
+            throw new ArgumentException("The command is not valid:\n  " + string.Join("\n  ", errors));
+        }
+
+        var content = new FormUrlEncodedContent(
+            new[]
+            {
+                new KeyValuePair<string, string>("ApiUser", command.ApiUser),
+                new KeyValuePair<string, string>("ApiKey", command.ApiKey),
+                new KeyValuePair<string, string>("Command", command.Command),
+                new KeyValuePair<string, string>("UserName", command.UserName),
+                new KeyValuePair<string, string>("ClientIp", command.ClientIp),
+            }
+                .Concat(command.AdditionalParameters)
+        );
+        
+        logger.LogDebug($"Sending request via POST\n{command.ApiUri}");
+        var response = await Client.PostAsync(command.ApiUri, content);
+        if (!response.IsSuccessStatusCode)
+            throw new HttpRequestException("Command execution failed.", null, response.StatusCode);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        
+        logger.LogDebug("Parsing XML response...");
+        var xml = new XmlDocument();
+        xml.LoadXml(responseContent);
+
+        if (xml.DocumentElement is null)
+            throw new XmlException("No XML content generated.");
+        
+        return xml.DocumentElement;
+    }
+
+    private static Task<XmlElement> ExecuteForXmlAsync(this IApiCommand command, ILogger logger)
+    {
+        switch (command)
+        {
+            case IApiGetCommand:
+                return ExecuteGetForXmlAsync(command, logger);
+            
+            case IApiPostCommand:
+                return ExecutePostForXmlAsync(command, logger);
+            
+            default:    // prefer POST since it keeps the params out of the URI
+                return ExecutePostForXmlAsync(command, logger);
+        }
     }
     
     /// <summary>

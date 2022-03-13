@@ -7,6 +7,8 @@ using Xunit.Abstractions;
 
 namespace OneBarker.NamecheapApi.Tests;
 
+#pragma warning disable xUnit2013
+
 public class ApiConfig_Should
 {
     private readonly ITestOutputHelper _output;
@@ -99,7 +101,7 @@ public class ApiConfig_Should
         var testConfig = new ApiConfig(host, Config.ApiConfig.ApiUser, Config.ApiConfig.ApiKey, Config.ApiConfig.ClientIp);
         var valid      = testConfig.IsValid(out var errors);
         Assert.False(valid);
-        _output.WriteLine("  " + string.Join("\n  ", errors));
+        _output.WriteLine(string.Join("\n", errors));
         Assert.Equal(2, errors.Length);
         Assert.Contains(errors, x => x.StartsWith("Host"));
         Assert.Contains(errors, x => x.StartsWith("ApiUri"));
@@ -114,7 +116,7 @@ public class ApiConfig_Should
         var testConfig = new ApiConfig(Config.ApiConfig.Host, userName, Config.ApiConfig.ApiKey, Config.ApiConfig.ClientIp);
         var valid      = testConfig.IsValid(out var errors);
         Assert.False(valid);
-        _output.WriteLine("  " + string.Join("\n  ", errors));
+        _output.WriteLine(string.Join("\n", errors));
         Assert.Equal(2, errors.Length);
         Assert.Contains(errors, x => x.StartsWith("ApiUser"));
         Assert.Contains(errors, x => x.StartsWith("UserName"));
@@ -129,7 +131,7 @@ public class ApiConfig_Should
         var testConfig = new ApiConfig(Config.ApiConfig.Host, Config.ApiConfig.ApiUser, apiKey, Config.ApiConfig.ClientIp);
         var valid      = testConfig.IsValid(out var errors);
         Assert.False(valid);
-        _output.WriteLine("  " + string.Join("\n  ", errors));
+        _output.WriteLine(string.Join("\n", errors));
         Assert.Equal(1, errors.Length);
         Assert.Contains(errors, x => x.StartsWith("ApiKey"));
     }
@@ -146,7 +148,7 @@ public class ApiConfig_Should
         var testConfig = new ApiConfig(Config.ApiConfig.Host, Config.ApiConfig.ApiUser, Config.ApiConfig.ApiKey, clientIp);
         var valid      = testConfig.IsValid(out var errors);
         Assert.False(valid);
-        _output.WriteLine("  " + string.Join("\n  ", errors));
+        _output.WriteLine(string.Join("\n", errors));
         Assert.Equal(1, errors.Length);
         Assert.Contains(errors, x => x.StartsWith("ClientIP"));
     }
@@ -160,7 +162,7 @@ public class ApiConfig_Should
         var testConfig = new TestCommand(Config.ApiConfig, command);
         var valid      = testConfig.IsValid(out var errors);
         Assert.False(valid);
-        _output.WriteLine("  " + string.Join("\n  ", errors));
+        _output.WriteLine(string.Join("\n", errors));
         Assert.Equal(1, errors.Length);
         Assert.Contains(errors, x => x.StartsWith("Command"));
     }
