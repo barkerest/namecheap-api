@@ -1,9 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OneBarker.NamecheapApi.Models;
+using OneBarker.NamecheapApi.Commands.Params;
+using OneBarker.NamecheapApi.Results;
+using OneBarker.NamecheapApi.Results.Domains;
 
 namespace OneBarker.NamecheapApi.Commands.Domains;
 
-public class Create : CommandBase
+/// <summary>
+/// Registers a new domain name.
+/// </summary>
+public class Create : CommandBase, IApiCommand<SingleResult<CreateResult>>
 {
     
     public Create(IApiConfig config)
@@ -14,6 +19,7 @@ public class Create : CommandBase
     /// <summary>
     /// Domain name to register.
     /// </summary>
+    [Required, StringLength(70)]
     public string DomainName { get; set; } = "";
 
     /// <summary>
@@ -24,6 +30,7 @@ public class Create : CommandBase
     /// <summary>
     /// Promotion code for the domain.
     /// </summary>
+    [StringLength(20)]
     public string PromotionCode { get; set; } = "";
 
     /// <summary>

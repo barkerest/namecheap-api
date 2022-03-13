@@ -1,4 +1,4 @@
-﻿namespace OneBarker.NamecheapApi.Models;
+﻿namespace OneBarker.NamecheapApi.Commands.Params;
 
 /// <summary>
 /// A command parameter model.

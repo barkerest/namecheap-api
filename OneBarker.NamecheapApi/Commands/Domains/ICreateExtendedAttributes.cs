@@ -1,4 +1,4 @@
-﻿using OneBarker.NamecheapApi.Models;
+﻿using OneBarker.NamecheapApi.Commands.Params;
 
 namespace OneBarker.NamecheapApi.Commands.Domains;
 

@@ -13,3 +13,14 @@ public interface IXmlParseable
     /// <param name="element"></param>
     public void LoadFromXmlElement(XmlElement element);
 }
+
+/// <summary>
+/// Interface for parseable single values.
+/// </summary>
+public interface IXmlParseableWithElementName : IXmlParseable
+{
+    /// <summary>
+    /// The name of the element that contains this item.
+    /// </summary>
+    public string ElementName { get; }
+}

@@ -22,17 +22,26 @@ public class GetList_Should
     public void ExecuteSuccessfully()
     {
         var cmd   = new GetList(Config.ApiConfigWithLogging(_output));
-        var valid = cmd.IsValid(out var errors);
-        if (!valid)
-        {
-            _output.WriteLine("Bad Config:");
-            _output.WriteLine(string.Join("\n", errors));
-            throw new ApplicationException("Configuration is not valid for testing.");
-        }
-
+        Assert.True(cmd.IsValid());
         var response = cmd.Execute();
+        _output.WriteLine(response.CommandResponse.RawXml);
         Assert.Equal(OptionsForResponseStatus.Ok, response.Status);
     }
+
+    [Fact]
+    public void BeValidForTesting()
+    {
+        var config = new GetList(Config.ApiConfig);
+        var valid  = config.IsValid(out var errors);
+        if (!valid)
+        {
+            _output.WriteLine("Errors:\n  " + string.Join("\n  ", errors));
+            throw new ApplicationException("Configuration is not valid for testing.");
+        }
+        
+        _output.WriteLine("The configuration is valid.");
+    }
+    
 
     [Theory]
     [InlineData(0)]

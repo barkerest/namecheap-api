@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using OneBarker.NamecheapApi.Models;
+using OneBarker.NamecheapApi.Commands.Params;
 
 namespace OneBarker.NamecheapApi.Utility;
 
@@ -32,10 +32,9 @@ internal class CommandValidator
         CommandType = commandType;
         
         _propertiesToCheck = CommandType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                    .Where(x => x.CanRead && x.CanWrite && !ExplicitConfigPropertyNames.Contains(x.Name))
+                                    .Where(x => x.CanRead && !ExplicitConfigPropertyNames.Contains(x.Name))
                                     .Select(x => (Property: x, Validations: x.GetCustomAttributes<ValidationAttribute>().ToArray()))
-                                    .Where(x => x.Validations.Any() ||
-                                                CommandParamType.IsAssignableFrom(x.Property.PropertyType))
+                                    .Where(x => x.Validations.Any() || CommandParamType.IsAssignableFrom(x.Property.PropertyType))
                                     .ToArray();
     }
 

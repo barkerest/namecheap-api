@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace OneBarker.NamecheapApi.Models;
+namespace OneBarker.NamecheapApi.Commands.Params;
 
 /// <summary>
 /// Information about a contact.
