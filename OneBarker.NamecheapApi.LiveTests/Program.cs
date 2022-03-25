@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OneBarker.NamecheapApi.Commands.Params;
 using OneBarker.NamecheapApi.Results;
 using OneBarker.NamecheapApi.Utility;
 
@@ -8,7 +7,7 @@ namespace OneBarker.NamecheapApi.LiveTests;
 public static class Program
 {
     public static IApiConfig Config     { get; }
-    public static string     TestDomain { get; private set; }
+    public static string     TestDomain { get; private set; } = "";
 
     static Program()
     {
