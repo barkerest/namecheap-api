@@ -18,6 +18,11 @@ public class ErrorMessage : IXmlParseable
     /// </summary>
     public string Message { get; private set; } = "";
 
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return $"[{Number}] {Message}";
+    }
 
     /// <inheritdoc />
     void IXmlParseable.LoadFromXmlElement(XmlElement element)

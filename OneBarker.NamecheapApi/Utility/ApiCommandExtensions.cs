@@ -179,8 +179,9 @@ public static class ApiCommandExtensions
         ((IXmlParseable)ret).LoadFromXmlElement(element);
         logger.LogInformation($"Result was {ret.Status}.");
 
-        // TODO: Process errors!
-        
+        if (ret.Status != OptionsForResponseStatus.Ok)
+            throw new ApiException(ret.Errors);
+
         return ret.CommandResponse;
     }
     
@@ -199,7 +200,8 @@ public static class ApiCommandExtensions
         ((IXmlParseable)ret).LoadFromXmlElement(element);
         logger.LogInformation($"Result was {ret.Status}.");
 
-        // TODO: Process errors!
+        if (ret.Status != OptionsForResponseStatus.Ok)
+            throw new ApiException(ret.Errors);
         
         return ret.CommandResponse;
     }

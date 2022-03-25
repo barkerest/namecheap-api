@@ -72,18 +72,18 @@ public static class ApiConfigExtensions
 
         if (string.IsNullOrWhiteSpace(config.ClientIp))
         {
-            err.Add("ClientIP is not set.");
+            err.Add("ClientIp is not set.");
         }
         else if (IPAddress.TryParse(config.ClientIp, out var ip))
         {
             if (ip.AddressFamily != AddressFamily.InterNetwork)
             {
-                err.Add("ClientIP is not an IPv4 address.");
+                err.Add("ClientIp is not an IPv4 address.");
             }
         }
         else
         {
-            err.Add("ClientIP is not a valid IP address.");
+            err.Add("ClientIp is not a valid IP address.");
         }
 
         if (string.IsNullOrWhiteSpace(config.ApiUri))

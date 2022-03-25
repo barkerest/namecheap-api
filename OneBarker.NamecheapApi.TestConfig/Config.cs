@@ -1,19 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
-using Xunit.Extensions.Logging;
 
-namespace OneBarker.NamecheapApi.Tests;
+namespace OneBarker.NamecheapApi.TestConfig;
 
 public static class Config
 {
     private class ApiConfigWrapper : IApiConfig
     {
-        public ApiConfigWrapper(IApiConfig config, ITestOutputHelper testOutputHelper)
+        public ApiConfigWrapper(IApiConfig config, Action<ILoggingBuilder> configLogging)
         {
             Host          = config.Host;
             ApiUri        = config.ApiUri;
@@ -21,9 +16,20 @@ public static class Config
             ApiKey        = config.ApiKey;
             UserName      = config.UserName;
             ClientIp      = config.ClientIp;
-            LoggerFactory = new LoggerFactory();
-            LoggerFactory.AddProvider(new XunitLoggerProvider(testOutputHelper, (_,_) => true));
+            LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(configLogging);
         }
+
+        public ApiConfigWrapper(IApiConfig config, string? host = null, string? apiUri = null, string? apiUser = null, string? apiKey = null, string? userName = null, string? clientIp = null)
+        {
+            Host          = host ?? config.Host;
+            ApiUri        = apiUri ?? $"https://{Host}/xml.response";
+            ApiUser       = apiUser ?? userName ?? config.ApiUser;
+            ApiKey        = apiKey ?? config.ApiKey;
+            UserName      = userName ?? apiUser ?? config.UserName;
+            ClientIp      = clientIp ?? config.ClientIp;
+            LoggerFactory = config.LoggerFactory;
+        }
+        
         public string         Host          { get; }
         public string         ApiUri        { get; }
         public string         ApiUser       { get; }
@@ -37,9 +43,12 @@ public static class Config
     public static  IPAddress      PublicIpAddress { get; }
     public static  IConfiguration Configuration   { get; }
     public static  IApiConfig     ApiConfig       { get; }
-    
-    public static IApiConfig ApiConfigWithLogging(ITestOutputHelper testOutputHelper)
-        => new ApiConfigWrapper(ApiConfig, testOutputHelper);
+
+    public static IApiConfig ApiConfigWithLogging(Action<ILoggingBuilder> configLogging)
+        => new ApiConfigWrapper(ApiConfig, configLogging);
+
+    public static IApiConfig WithAlteredValue(this IApiConfig self, string? host = null, string? apiUser = null, string? apiKey = null, string? clientIp = null)
+        => new ApiConfigWrapper(self, host, null, apiUser, apiKey, apiUser, clientIp);
     
     static Config()
     {
@@ -61,6 +70,15 @@ public static class Config
         }
 
         cfgBuilder.AddEnvironmentVariables("ONEB_");
+        cfgBuilder.AddCommandLine(
+            Environment.GetCommandLineArgs(),
+            new Dictionary<string, string>()
+            {
+                { "--api-user", "NamecheapApi:ApiUser" },
+                { "--api-key", "NamecheapApi:ApiKey" }
+            }
+        );
+        
         Configuration = cfgBuilder.Build();
 
         WebClient = new HttpClient();
@@ -96,5 +114,15 @@ public static class Config
             PublicIpAddress
         );
     }
-    
+
+    public static bool BasicLoggingFilter(string category, LogLevel level)
+    {
+        if (level >= LogLevel.Error) return true;
+
+        category = category.ToLower();
+        if (category.StartsWith("microsoft.") ||
+            category.StartsWith("system.")) return level >= LogLevel.Warning;
+
+        return true;
+    }
 }

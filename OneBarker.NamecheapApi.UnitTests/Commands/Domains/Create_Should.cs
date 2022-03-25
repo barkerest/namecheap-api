@@ -1,33 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Linq.Expressions;
 using OneBarker.NamecheapApi.Commands.Domains;
 using OneBarker.NamecheapApi.Commands.Params;
-using OneBarker.NamecheapApi.Results;
 using OneBarker.NamecheapApi.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OneBarker.NamecheapApi.Tests.Commands.Domains;
+namespace OneBarker.NamecheapApi.UnitTests.Commands.Domains;
 
 #pragma warning disable xUnit2013
 
-public class Create_Should
+public class Create_Should : CommonTestBase<Create>
 {
-    private readonly ITestOutputHelper _output;
-
-    public Create_Should(ITestOutputHelper output)
+    public Create_Should(ITestOutputHelper output) : base(output)
     {
-        _output = output;
+        
     }
 
     #region CreateValidCommand
 
-    private Create CreateValidCommand()
+    protected override Create CreateValidCommand()
     {
         // default blank values are commented out.
-        return new Create(Config.ApiConfigWithLogging(_output))
+        return new Create(GoodConfig)
         {
             DomainName = "onebarker-dev.com",
             YearsToRegister = 2,
@@ -140,32 +136,14 @@ public class Create_Should
         };
     }
     #endregion
-    
-    #region InvalidLongStrings
-    
-    private const string Invalid21CharString  = "A-21-char-string-zzzz";
-    private const string Invalid51CharString  = "A-51-char-string-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-    private const string Invalid71CharString  = "A-71-char-string-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
-    private const string Invalid256CharString = "A-256-char-string-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz1zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz2zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz123456";
-    
-    #endregion
 
 
     [Fact]
     public void BeValidForTesting()
-    {
-        var valid = CreateValidCommand().IsValid(out var errors);
-
-        if (!valid)
-        {
-            _output.WriteLine("Errors:\n  " + string.Join("\n  ", errors));
-            throw new ApplicationException("Configuration is not valid for testing.");
-        }
-        
-        _output.WriteLine("The configuration is valid.");
-    }
-
-    //[Fact]
+        => TestValidConfig(CreateValidCommand());
+    
+    /*
+    [Fact]
     public void Execute()
     {
         var cmd = CreateValidCommand();
@@ -173,138 +151,286 @@ public class Create_Should
         var response = cmd.GetResult();
         Assert.True(response.Result.Registered);
     }
-
-    private void RunRejectTest(Action<Create> setBadValue, params string[] propNames)
-    {
-        var config = CreateValidCommand();
-        setBadValue(config);
-        var valid = config.IsValid(out var errors);
-        Assert.False(valid, string.Join(", ", propNames) + " should be invalid");
-        _output.WriteLine(string.Join("\n", errors));
-        Assert.Equal(propNames.Length, errors.Length);
-        foreach (var propName in propNames)
-        {
-            Assert.Contains(errors, x => x.Contains(propName));
-        }
-    }
-
-    private void RunContactRejectTest(Action<Contact> setBadValue, params string[] propNames)
-    {
-        RunRejectTest(config => setBadValue(config.Registrant), propNames.Select(x => "Registrant." + x).ToArray());
-        RunRejectTest(config => setBadValue(config.Tech), propNames.Select(x => "Tech." + x).ToArray());
-        RunRejectTest(config => setBadValue(config.Admin), propNames.Select(x => "Admin." + x).ToArray());
-        RunRejectTest(config => setBadValue(config.AuxBilling), propNames.Select(x => "AuxBilling." + x).ToArray());
-        RunRejectTest(config =>
-        {
-            config.Billing = CreateValidContact();
-            setBadValue(config.Billing);
-        }, propNames.Select(x => "Billing." + x).ToArray());
-    }
+    */
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    [InlineData(Invalid256CharString)]
+    [InlineData(Invalid71CharString)]
     public void RejectInvalidDomainName(string domainName)
-        => RunRejectTest(config => config.DomainName = domainName, "DomainName");
+        => TestInvalidOption(c => c.DomainName, domainName);
 
+    [Theory]
+    [InlineData("a")]
+    [InlineData("1")]
+    [InlineData("Hello")]
+    [InlineData("Hello.World")]
+    [InlineData(Valid70CharString)]
+    public void PermitValidDomainName(string domainName)
+        => TestValidOption(c => c.DomainName, domainName);
+    
     [Theory]
     [InlineData(Invalid21CharString)]
     public void RejectInvalidPromotionCode(string promoCode)
-        => RunRejectTest(config => config.PromotionCode = promoCode, "PromotionCode");
+        => TestInvalidOption(c => c.PromotionCode, promoCode);
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid20CharString)]
+    public void PermitValidPromotionCode(string promoCode)
+        => TestValidOption(x => x.PromotionCode, promoCode);
+
+    private void TestInvalidOptionsForContact<TValue>(Expression<Func<Contact, TValue>> property, TValue value)
+    {
+        TestInvalidOptionsFor(
+            property,
+            c => c.Billing = null,
+            value,
+            c => c.Registrant,
+            c => c.Tech,
+            c => c.Admin,
+            c => c.AuxBilling
+        );
+        TestInvalidOptionsFor(
+            property,
+            c => c.Billing = CreateValidContact(),
+            value,
+            c => c.Billing
+        );
+    }
+    
+    private void TestValidOptionsForContact<TValue>(Expression<Func<Contact, TValue>> property, TValue value)
+    {
+        TestValidOptionsFor(
+            property,
+            c => c.Billing = null,
+            value,
+            c => c.Registrant,
+            c => c.Tech,
+            c => c.Admin,
+            c => c.AuxBilling
+        );
+        TestValidOptionsFor(
+            property,
+            c => c.Billing = CreateValidContact(),
+            value,
+            c => c.Billing
+        );
+    }
+
+    
 
     [Theory]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidOrganizationName(string orgName)
-        => RunContactRejectTest(contact => contact.OrganizationName   = orgName, "OrganizationName");
+        => TestInvalidOptionsForContact(c => c.OrganizationName, orgName);
 
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidOrganizationName(string orgName)
+        => TestValidOptionsForContact(x => x.OrganizationName, orgName);
+    
     [Theory]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidJobTitle(string title)
-        => RunContactRejectTest(contact => contact.JobTitle = title, "JobTitle");
+        => TestInvalidOptionsForContact(c => c.JobTitle, title);
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidJobTitle(string title)
+        => TestValidOptionsForContact(x => x.JobTitle, title);
+    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidFirstName(string firstName)
-        => RunContactRejectTest(contact => contact.FirstName = firstName, "FirstName");
+        => TestInvalidOptionsForContact(c => c.FirstName, firstName);
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidFirstName(string firstName)
+        => TestValidOptionsForContact(x => x.FirstName, firstName);
+    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidLastName(string lastName)
-        => RunContactRejectTest(contact => contact.LastName = lastName, "LastName");
+        => TestInvalidOptionsForContact(c => c.LastName, lastName);
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidLastName(string lastName)
+        => TestValidOptionsForContact(c => c.LastName, lastName);
+    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidAddress1(string address)
-        => RunContactRejectTest(contact => contact.Address1 = address, "Address1");
+        => TestInvalidOptionsForContact(c => c.Address1, address);
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidAddress1(string address)
+        => TestValidOptionsForContact(x => x.Address1, address);
     
     [Theory]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidAddress2(string address)
-        => RunContactRejectTest(contact => contact.Address2 = address, "Address2");
+        => TestInvalidOptionsForContact(c => c.Address2, address);
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidAddress2(string address)
+        => TestValidOptionsForContact(x => x.Address2, address);
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidCity(string city)
-        => RunContactRejectTest(contact => contact.City = city, "City");
+        => TestInvalidOptionsForContact(c => c.City, city);
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidCity(string city)
+        => TestValidOptionsForContact(c => c.City, city);
     
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidStateProvince(string stateProvince)
-        => RunContactRejectTest(contact => contact.StateOrProvince = stateProvince, "StateOrProvince");
+        => TestInvalidOptionsForContact(c => c.StateOrProvince, stateProvince);
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidStateProvince(string stateProvince)
+        => TestValidOptionsForContact(c => c.StateOrProvince, stateProvince);
+    
     [Theory]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidStateProvinceChoice(string stateProvince)
-        => RunContactRejectTest(contact => contact.StateOrProvinceChoice = stateProvince, "StateOrProvinceChoice");
+        => TestInvalidOptionsForContact(c => c.StateOrProvinceChoice, stateProvince);
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidStateProvinceChoice(string stateProvince)
+        => TestValidOptionsForContact(c => c.StateOrProvinceChoice, stateProvince);
     
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidPostalCode(string postalCode)
-        => RunContactRejectTest(contact => contact.PostalCode = postalCode, "PostalCode");
+        => TestInvalidOptionsForContact(c => c.PostalCode, postalCode);
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidPostalCode(string postalCode)
+        => TestValidOptionsForContact(c => c.PostalCode, postalCode);
+    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidCountry(string country)
-        => RunContactRejectTest(contact => contact.Country = country, "Country");
+        => TestInvalidOptionsForContact(c => c.Country, country);
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidCountry(string country)
+        => TestValidOptionsForContact(c => c.Country, country);
+    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidPhone(string phone)
-        => RunContactRejectTest(contact => contact.Phone = phone, "Phone");
+        => TestInvalidOptionsForContact(c => c.Phone, phone);
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidPhone(string phone)
+        => TestValidOptionsForContact(c => c.Phone, phone);
+    
     [Theory]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidPhoneExt(string phone)
-        => RunContactRejectTest(contact => contact.PhoneExt = phone, "PhoneExt");
+        => TestInvalidOptionsForContact(c => c.PhoneExt, phone);
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidPhoneExt(string phone)
+        => TestValidOptionsForContact(c => c.PhoneExt, phone);
+    
     [Theory]
     [InlineData(Invalid51CharString)]
     public void RejectInvalidFax(string fax)
-        => RunContactRejectTest(contact => contact.Fax = fax, "Fax");
+        => TestInvalidOptionsForContact(c => c.Fax, fax);
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid50CharString)]
+    public void PermitValidFax(string fax)
+        => TestValidOptionsForContact(c => c.Fax, fax);
+    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(Invalid256CharString)]
     public void RejectInvalidEmailAddress(string address)
-        => RunContactRejectTest(contact => contact.EmailAddress = address, "EmailAddress");
-    
-    
+        => TestInvalidOptionsForContact(c => c.EmailAddress, address);
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("a")]
+    [InlineData(Valid255CharString)]
+    public void PermitValidEmailAddress(string address)
+        => TestValidOptionsForContact(c => c.EmailAddress, address);
 }

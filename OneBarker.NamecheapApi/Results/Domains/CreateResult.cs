@@ -4,7 +4,7 @@ using OneBarker.NamecheapApi.Utility;
 namespace OneBarker.NamecheapApi.Results.Domains;
 
 /// <summary>
-/// The result from a domain create command.
+/// The result from the Domains:Create command.
 /// </summary>
 public class CreateResult : IXmlParseableWithElementName
 {
