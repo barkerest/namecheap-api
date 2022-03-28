@@ -75,7 +75,10 @@ public static class Config
             new Dictionary<string, string>()
             {
                 { "--api-user", "NamecheapApi:ApiUser" },
-                { "--api-key", "NamecheapApi:ApiKey" }
+                { "--api-key", "NamecheapApi:ApiKey" },
+                { "--test-domain-name", "NamecheapApi:TestDomainName" },
+                { "--test-domain-tld", "NamecheapApi:TestDomainTLD" },
+                { "--test-domain", "NamecheapApi:ExplicitTestDomain" },
             }
         );
         

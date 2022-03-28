@@ -1,14 +1,19 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Security.Cryptography;
+using Microsoft.Extensions.Logging;
 using OneBarker.NamecheapApi.Results;
+using OneBarker.NamecheapApi.Results.Domains;
 using OneBarker.NamecheapApi.Utility;
+using BindingFlags = System.Reflection.BindingFlags;
 
 namespace OneBarker.NamecheapApi.LiveTests;
 
 public static class Program
 {
-    public static IApiConfig Config     { get; }
-    public static string     TestDomain { get; private set; } = "";
+    public static RandomNumberGenerator RNG        { get; }
+    public static IApiConfig            Config     { get; }
+    public static string                TestDomain { get; private set; } = "";
 
+    
     static Program()
     {
         Config = TestConfig.Config.ApiConfigWithLogging(
@@ -17,8 +22,52 @@ public static class Program
                        .SetMinimumLevel(LogLevel.Debug)
                        .AddFilter(TestConfig.Config.BasicLoggingFilter)
         );
+        
+        RNG = RandomNumberGenerator.Create();
     }
 
+    /// <summary>
+    /// Generate a random number between min and max inclusive of both min and max.
+    /// </summary>
+    /// <param name="min">The minimum value to return.</param>
+    /// <param name="max">The maximum value to return.</param>
+    /// <returns></returns>
+    public static int RandomNumber(int min, int max)
+    {
+        if (max <= min) throw new ArgumentException("Max must be greater than min.");
+        var diff  = max - min + 1;
+        var bytes = new byte[4];
+        RNG.GetBytes(bytes, 0, 4);
+        return (int)(BitConverter.ToUInt32(bytes, 0) % diff) + min;
+    }
+    
+    /// <summary>
+    /// Returns a random entry from a list and removes the entry from the list.
+    /// </summary>
+    /// <param name="list"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns>Returns a random entry or null if no more entries exist.</returns>
+    public static T? PopRandomEntry<T>(this List<T> list) where T : class
+    {
+        if (list.Count == 0) return null;
+        int index;
+        
+        if (list.Count == 1)
+        {
+            index = 0;
+        }
+        else
+        {
+            var bytes = new byte[4];
+            RNG.GetBytes(bytes, 0, 4);
+            index = (int)(BitConverter.ToUInt32(bytes, 0) % list.Count);
+        }
+
+        var ret = list[index];
+        list.RemoveAt(index);
+        return ret;
+    }
+    
     public static void Main(string[] args)
     {
         var logger = Config.LoggerFactory.CreateLogger("Program");
@@ -61,86 +110,130 @@ Key:       {Config.ApiKey[..5]}..{Config.ApiKey[^5..]}
 "
             );
 
+            var testDom                                     = TestConfig.Config.Configuration["NamecheapApi:TestDomainName"] ?? "example";
+            var testTld                                     = TestConfig.Config.Configuration["NamecheapApi:TestDomainTLD"] ?? "com";
+            var explicitTestDomain                          = TestConfig.Config.Configuration["NamecheapApi:ExplicitTestDomain"];
 
-            logger.LogDebug("Selecting a test domain ");
-            var n      = 1;
-            var check  = new Commands.Domains.Check(Config);
-            var domain = $"example-{n}.com";
-            while (true)
+            if (string.IsNullOrWhiteSpace(explicitTestDomain))
             {
-                check.DomainList = new[] { domain };
-                var checkResult = check.GetResult().Results.First(x => x.Domain.Equals(domain, StringComparison.OrdinalIgnoreCase));
-                if (checkResult is { Available: true }) break;
 
-                n++;
-                if (n % 5 == 0) n += 250;
-                domain = $"example-{n}.com";
+                if (string.IsNullOrWhiteSpace(testDom)) testDom = "example";
+                if (string.IsNullOrWhiteSpace(testTld)) testTld = "com";
+
+                logger.LogDebug("Selecting a test domain ");
+                var n     = RandomNumber(1, 15);
+                var check = new Commands.Domains.Check(Config);
+
+                CheckResultEntry? checkResult;
+
+                while (true)
+                {
+                    check.DomainList = Enumerable
+                                       .Range(1, 10)
+                                       .Select(
+                                           _ =>
+                                           {
+                                               var ret = $"{testDom}-{n}.{testTld}";
+                                               n += RandomNumber(1, 15);
+                                               return ret;
+                                           }
+                                       )
+                                       .ToArray();
+                    logger.LogDebug("Checking the following domains:\r\n  " + string.Join("\r\n  ", check.DomainList));
+                    checkResult = check.GetResult().Results.FirstOrDefault(x => x is { Available: true });
+                    if (checkResult is not null) break;
+                }
+
+                TestDomain = checkResult.Domain;
+
+                logger.LogInformation($"Registering: {TestDomain}");
+
+                var create = new Commands.Domains.Create(Config)
+                {
+                    DomainName      = TestDomain,
+                    YearsToRegister = 1,
+                    Registrant =
+                    {
+                        FirstName       = "John",
+                        LastName        = "Doe",
+                        Address1        = "1 Center Court",
+                        City            = "Cleveland",
+                        StateOrProvince = "OH",
+                        PostalCode      = "44115",
+                        Country         = "US",
+                        Phone           = "+1.8005554321",
+                        EmailAddress    = "j.doe@example.com",
+                    },
+                    Admin =
+                    {
+                        FirstName       = "John",
+                        LastName        = "Doe",
+                        Address1        = "1 Center Court",
+                        City            = "Cleveland",
+                        StateOrProvince = "OH",
+                        PostalCode      = "44115",
+                        Country         = "US",
+                        Phone           = "+1.8005554321",
+                        EmailAddress    = "j.doe@example.com",
+                    },
+                    Tech =
+                    {
+                        FirstName       = "John",
+                        LastName        = "Doe",
+                        Address1        = "1 Center Court",
+                        City            = "Cleveland",
+                        StateOrProvince = "OH",
+                        PostalCode      = "44115",
+                        Country         = "US",
+                        Phone           = "+1.8005554321",
+                        EmailAddress    = "j.doe@example.com",
+                    },
+                    AuxBilling =
+                    {
+                        FirstName       = "John",
+                        LastName        = "Doe",
+                        Address1        = "1 Center Court",
+                        City            = "Cleveland",
+                        StateOrProvince = "OH",
+                        PostalCode      = "44115",
+                        Country         = "US",
+                        Phone           = "+1.8005554321",
+                        EmailAddress    = "j.doe@example.com",
+                    },
+                };
+                var createResult = create.GetResult();
+                if (createResult.Result.Registered)
+                {
+                    logger.LogInformation($"Successfully registered test domain: {TestDomain}");
+                }
+
+            }
+            else
+            {
+                TestDomain = explicitTestDomain;
+                logger.LogInformation($"User supplied explicit test domain, skipping check/register tests.\r\nTest domain: {TestDomain}");
             }
 
-            TestDomain = domain;
-            logger.LogInformation($"Registering: {TestDomain}");
+            var tint    = typeof(IApiTester);
+            var testers = typeof(Program)
+                          .Assembly
+                          .GetTypes()
+                          .Where(x => tint.IsAssignableFrom(x))
+                          .Select(x => x.GetConstructor(BindingFlags.Public | BindingFlags.Instance, Type.EmptyTypes))
+                          .Where(x => x is not null)
+                          .Select(x => (IApiTester)x.Invoke(null))
+                          .OrderBy(x => x.Name)
+                          .ToList();
 
-            var create = new Commands.Domains.Create(Config)
+            logger.LogInformation($"Found {testers.Count} testers to run...");
+
+            while (testers.PopRandomEntry() is { } tester)
             {
-                DomainName      = TestDomain,
-                YearsToRegister = 1,
-                Registrant =
-                {
-                    FirstName       = "John",
-                    LastName        = "Doe",
-                    Address1        = "1 Center Court",
-                    City            = "Cleveland",
-                    StateOrProvince = "OH",
-                    PostalCode      = "44115",
-                    Country         = "US",
-                    Phone           = "+1.8005554321",
-                    EmailAddress    = "j.doe@example.com",
-                },
-                Admin =
-                {
-                    FirstName       = "John",
-                    LastName        = "Doe",
-                    Address1        = "1 Center Court",
-                    City            = "Cleveland",
-                    StateOrProvince = "OH",
-                    PostalCode      = "44115",
-                    Country         = "US",
-                    Phone           = "+1.8005554321",
-                    EmailAddress    = "j.doe@example.com",
-                },
-                Tech =
-                {
-                    FirstName       = "John",
-                    LastName        = "Doe",
-                    Address1        = "1 Center Court",
-                    City            = "Cleveland",
-                    StateOrProvince = "OH",
-                    PostalCode      = "44115",
-                    Country         = "US",
-                    Phone           = "+1.8005554321",
-                    EmailAddress    = "j.doe@example.com",
-                },
-                AuxBilling =
-                {
-                    FirstName       = "John",
-                    LastName        = "Doe",
-                    Address1        = "1 Center Court",
-                    City            = "Cleveland",
-                    StateOrProvince = "OH",
-                    PostalCode      = "44115",
-                    Country         = "US",
-                    Phone           = "+1.8005554321",
-                    EmailAddress    = "j.doe@example.com",
-                },
-            };
-            var createResult = create.GetResult();
-            if (createResult.Result.Registered)
-            {
-                logger.LogInformation($"Successfully registered test domain: {TestDomain}");
+                logger.LogInformation($"Running {tester.Name}...");
+                tester.RunTest(logger);
             }
-            
-            // TODO: Run other tests now.
-            
+
+            logger.LogInformation("All tests complete.");
         }
         catch (ApiException ex)
         {

@@ -98,7 +98,7 @@ public static class ApiCommandExtensions
                 .Concat(command.AdditionalParameters)
         );
         
-        logger.LogDebug($"Sending request via POST\n{command.ApiUri}");
+        logger.LogDebug($"Sending request via POST\n{command.ApiUri}?Command={command.Command}");
         var response = await Client.PostAsync(command.ApiUri, content);
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException("Command execution failed.", null, response.StatusCode);
@@ -142,7 +142,7 @@ public static class ApiCommandExtensions
         
         var ret = new ApiCommandResponse<UnprocessedContent>();
         ((IXmlParseable)ret).LoadFromXmlElement(element);
-        logger.LogInformation($"Result was {ret.Status}.");
+        logger.LogDebug($"Result was {ret.Status}.");
         
         return ret;
     }
@@ -159,7 +159,7 @@ public static class ApiCommandExtensions
 
         var ret = new ApiCommandResponse<UnprocessedContent>();
         ((IXmlParseable)ret).LoadFromXmlElement(element);
-        logger.LogInformation($"Result was {ret.Status}.");
+        logger.LogDebug($"Result was {ret.Status}.");
         
         return ret;
     }
@@ -177,7 +177,7 @@ public static class ApiCommandExtensions
 
         var ret = new ApiCommandResponse<TResult>();
         ((IXmlParseable)ret).LoadFromXmlElement(element);
-        logger.LogInformation($"Result was {ret.Status}.");
+        logger.LogDebug($"Result was {ret.Status}.");
 
         if (ret.Status != OptionsForResponseStatus.Ok)
             throw new ApiException(ret.Errors);
@@ -198,7 +198,7 @@ public static class ApiCommandExtensions
 
         var ret = new ApiCommandResponse<TResult>();
         ((IXmlParseable)ret).LoadFromXmlElement(element);
-        logger.LogInformation($"Result was {ret.Status}.");
+        logger.LogDebug($"Result was {ret.Status}.");
 
         if (ret.Status != OptionsForResponseStatus.Ok)
             throw new ApiException(ret.Errors);

@@ -30,6 +30,7 @@ public class SetRegistrarLock : CommandBase, IApiCommand<SetRegistrarLockResult>
 
     protected override IEnumerable<KeyValuePair<string, string>> GetAdditionalParameters()
     {
-        throw new NotImplementedException();
+        yield return new KeyValuePair<string, string>("DomainName", DomainName);
+        yield return new KeyValuePair<string, string>("LockAction", LockAction.ToString().ToUpper());
     }
 }
