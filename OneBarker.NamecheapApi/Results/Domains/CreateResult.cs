@@ -26,7 +26,7 @@ public class CreateResult : IXmlParseableWithElementName
     /// <summary>
     /// Unique integer ID for the domain.
     /// </summary>
-    public int DomainID { get; private set; }
+    public long DomainID { get; private set; }
     
     /// <summary>
     /// Unique integer ID for the order.
@@ -56,7 +56,7 @@ public class CreateResult : IXmlParseableWithElementName
 
         Registered        = element.GetAttributeAsBoolean("Registered");
         ChargedAmount     = element.GetAttributeAsDecimal("ChargedAmount");
-        DomainID          = element.GetAttributeAsInt32("DomainID");
+        DomainID          = element.GetAttributeAsInt64("DomainID");
         OrderID           = element.GetAttributeAsInt64("OrderID");
         TransactionID     = element.GetAttributeAsInt64("TransactionID");
         WhoisGuardEnabled = element.GetAttributeAsBoolean("WhoisguardEnable");

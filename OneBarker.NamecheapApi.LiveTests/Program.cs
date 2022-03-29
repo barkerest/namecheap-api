@@ -124,7 +124,7 @@ Key:       {Config.ApiKey[..5]}..{Config.ApiKey[^5..]}
                 var n     = RandomNumber(1, 15);
                 var check = new Commands.Domains.Check(Config);
 
-                CheckResultEntry? checkResult;
+                CheckResult? checkResult;
 
                 while (true)
                 {
@@ -140,7 +140,7 @@ Key:       {Config.ApiKey[..5]}..{Config.ApiKey[^5..]}
                                        )
                                        .ToArray();
                     logger.LogDebug("Checking the following domains:\r\n  " + string.Join("\r\n  ", check.DomainList));
-                    checkResult = check.GetResult().Results.FirstOrDefault(x => x is { Available: true });
+                    checkResult = check.GetResult().FirstOrDefault(x => x is { Available: true });
                     if (checkResult is not null) break;
                 }
 
@@ -202,7 +202,7 @@ Key:       {Config.ApiKey[..5]}..{Config.ApiKey[^5..]}
                     },
                 };
                 var createResult = create.GetResult();
-                if (createResult.Result.Registered)
+                if (createResult.Registered)
                 {
                     logger.LogInformation($"Successfully registered test domain: {TestDomain}");
                 }

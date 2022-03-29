@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using OneBarker.NamecheapApi.Commands.Params;
-using OneBarker.NamecheapApi.Results;
+using OneBarker.NamecheapApi.CommonModels;
 using OneBarker.NamecheapApi.Results.Domains;
 
 namespace OneBarker.NamecheapApi.Commands.Domains;
@@ -8,9 +8,13 @@ namespace OneBarker.NamecheapApi.Commands.Domains;
 /// <summary>
 /// Registers a new domain name.
 /// </summary>
-public class Create : CommandBase, IApiCommand<SingleResult<CreateResult>>
+public class Create : CommandBase, IApiCommandWithSingleResult<CreateResult>
 {
     
+    /// <summary>
+    /// Create a new command.
+    /// </summary>
+    /// <param name="config">The API configuration.</param>
     public Create(IApiConfig config)
         : base(config, "namecheap.domains.create")
     {

@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Xml;
+using OneBarker.NamecheapApi.Commands.Params;
+using OneBarker.NamecheapApi.Utility;
 
-namespace OneBarker.NamecheapApi.Commands.Params;
+namespace OneBarker.NamecheapApi.CommonModels;
 
 /// <summary>
 /// Information about a contact.
 /// </summary>
-public class Contact : ICommandParam
+public class Contact : ICommandParam, IXmlParseable
 {
     /// <summary>
     /// The organization name for this contact.
@@ -97,7 +100,36 @@ public class Contact : ICommandParam
     [Required, StringLength(255)]
     public string EmailAddress { get; set; } = "";
 
+    /// <summary>
+    /// Indicates if the contact information is read-only.  Set on return from GetContacts.
+    /// </summary>
+    public bool ReadOnly { get; set; }
 
+
+    /// <summary>
+    /// Copies from the other contact into this contact.
+    /// </summary>
+    /// <param name="other"></param>
+    public void CopyFrom(Contact other)
+    {
+        OrganizationName      = other.OrganizationName;
+        JobTitle              = other.JobTitle;
+        FirstName             = other.FirstName;
+        LastName              = other.LastName;
+        Address1              = other.Address1;
+        Address2              = other.Address2;
+        City                  = other.City;
+        StateOrProvince       = other.StateOrProvince;
+        StateOrProvinceChoice = other.StateOrProvinceChoice;
+        PostalCode            = other.PostalCode;
+        Country               = other.Country;
+        Phone                 = other.Phone;
+        PhoneExt              = other.PhoneExt;
+        Fax                   = other.Fax;
+        EmailAddress          = other.EmailAddress;
+        ReadOnly              = other.ReadOnly;
+    }
+    
     /// <inheritdoc />
     IEnumerable<KeyValuePair<string, string>> ICommandParam.GenerateParameters(string prefix)
     {
@@ -116,5 +148,25 @@ public class Contact : ICommandParam
         if (!string.IsNullOrWhiteSpace(PhoneExt)) yield return new KeyValuePair<string, string>(prefix + "PhoneExt", PhoneExt);
         if (!string.IsNullOrWhiteSpace(Fax)) yield return new KeyValuePair<string, string>(prefix + "Fax", Fax);
         yield return new KeyValuePair<string, string>(prefix + "EmailAddress", EmailAddress);
+    }
+
+    void IXmlParseable.LoadFromXmlElement(XmlElement element)
+    {
+        ReadOnly              = element.GetAttributeAsBoolean("ReadOnly");
+        OrganizationName      = element.GetChildContent("OrganizationName");
+        JobTitle              = element.GetChildContent("JobTitle");
+        FirstName             = element.GetChildContent("FirstName");
+        LastName              = element.GetChildContent("LastName");
+        Address1              = element.GetChildContent("Address1");
+        Address2              = element.GetChildContent("Address2");
+        City                  = element.GetChildContent("City");
+        StateOrProvince       = element.GetChildContent("StateProvince");
+        StateOrProvinceChoice = element.GetChildContent("StateProvinceChoice");
+        PostalCode            = element.GetChildContent("PostalCode");
+        Country               = element.GetChildContent("Country");
+        Phone                 = element.GetChildContent("Phone");
+        PhoneExt              = element.GetChildContent("PhoneExt");
+        Fax                   = element.GetChildContent("Fax");
+        EmailAddress          = element.GetChildContent("EmailAddress");
     }
 }

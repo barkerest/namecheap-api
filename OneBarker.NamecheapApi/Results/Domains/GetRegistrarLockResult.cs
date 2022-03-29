@@ -6,7 +6,7 @@ namespace OneBarker.NamecheapApi.Results.Domains;
 /// <summary>
 /// The result from the Domains:GetRegistrarLock command.
 /// </summary>
-public class GetRegistrarLockResult : IXmlParseable
+public class GetRegistrarLockResult : IXmlParseableWithElementName
 {
     /// <summary>
     /// The domain name.
@@ -20,9 +20,9 @@ public class GetRegistrarLockResult : IXmlParseable
 
     void IXmlParseable.LoadFromXmlElement(XmlElement element)
     {
-        element             = element.GetChild("DomainGetRegistrarLockResult") ?? throw new InvalidOperationException("Missing result.");
-        
         Domain              = element.GetAttribute("Domain");
         RegistrarLockStatus = element.GetAttributeAsBoolean("RegistrarLockStatus");
     }
+
+    string IXmlParseableWithElementName.ElementName => "DomainGetRegistrarLockResult";
 }

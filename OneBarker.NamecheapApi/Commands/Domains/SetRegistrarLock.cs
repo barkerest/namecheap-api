@@ -6,7 +6,7 @@ namespace OneBarker.NamecheapApi.Commands.Domains;
 /// <summary>
 /// Sets the Registrar Lock status for a domain.
 /// </summary>
-public class SetRegistrarLock : CommandBase, IApiCommand<SetRegistrarLockResult>
+public class SetRegistrarLock : CommandBase, IApiCommandWithSingleResult<SetRegistrarLockResult>
 {
     /// <summary>
     /// Creates a new command.

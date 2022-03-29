@@ -4,26 +4,25 @@ using OneBarker.NamecheapApi.Results.Domains;
 namespace OneBarker.NamecheapApi.Commands.Domains;
 
 /// <summary>
-/// Gets the Registrar Lock status for the requested domain.
+/// Gets the contacts for a registered domain name.
 /// </summary>
-public class GetRegistrarLock : CommandBase, IApiCommandWithSingleResult<GetRegistrarLockResult>
+public class GetContacts : CommandBase, IApiCommandWithSingleResult<GetContactsResult>
 {
     /// <summary>
-    /// Create a new command.
+    /// 
     /// </summary>
-    /// <param name="config">The API configuration.</param>
-    public GetRegistrarLock(IApiConfig config)
-        : base(config, "namecheap.domains.getRegistrarLock")
+    /// <param name="config"></param>
+    public GetContacts(IApiConfig config)
+        : base(config, "namecheap.domains.getContacts")
     {
-        
     }
 
     /// <summary>
-    /// Domain name to get status for.
+    /// The registered domain name.
     /// </summary>
     [Required, StringLength(70)]
     public string DomainName { get; set; } = "";
-
+    
     protected override IEnumerable<KeyValuePair<string, string>> GetAdditionalParameters()
     {
         yield return new KeyValuePair<string, string>("DomainName", DomainName);

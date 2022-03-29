@@ -26,6 +26,24 @@ public interface IApiCommand<TResponse> : IApiCommand where TResponse : class, I
 }
 
 /// <summary>
+/// The configuration for an API command with a single strongly typed response.
+/// </summary>
+/// <typeparam name="TResponse"></typeparam>
+public interface IApiCommandWithSingleResult<TResponse> : IApiCommand<TResponse> where TResponse : class, IXmlParseableWithElementName, new()
+{
+    
+}
+
+/// <summary>
+/// The configuration for an API command with a list of strongly typed responses.
+/// </summary>
+/// <typeparam name="TResponse"></typeparam>
+public interface IApiCommandWithMultipleResults<TResponse> : IApiCommand<TResponse> where TResponse : class, IXmlParseableWithElementName, new()
+{
+    
+}
+
+/// <summary>
 /// An API command that requires the GET method.
 /// </summary>
 public interface IApiGetCommand : IApiCommand
@@ -42,6 +60,23 @@ public interface IApiGetCommand<TResponse> : IApiCommand<TResponse>, IApiGetComm
     
 }
 
+/// <summary>
+/// The configuration for an API command with a single strongly typed response.
+/// </summary>
+/// <typeparam name="TResponse"></typeparam>
+public interface IApiGetCommandWithSingleResult<TResponse> : IApiCommandWithSingleResult<TResponse>, IApiGetCommand where TResponse : class, IXmlParseableWithElementName, new()
+{
+    
+}
+
+/// <summary>
+/// The configuration for an API command with a list of strongly typed responses.
+/// </summary>
+/// <typeparam name="TResponse"></typeparam>
+public interface IApiGetCommandWithMultipleResults<TResponse> : IApiCommandWithMultipleResults<TResponse>, IApiGetCommand where TResponse : class, IXmlParseableWithElementName, new()
+{
+    
+}
 
 /// <summary>
 /// An API command that requires the POST method.
@@ -60,3 +95,20 @@ public interface IApiPostCommand<TResponse> : IApiCommand<TResponse>, IApiPostCo
     
 }
 
+/// <summary>
+/// The configuration for an API command with a single strongly typed response.
+/// </summary>
+/// <typeparam name="TResponse"></typeparam>
+public interface IApiPostCommandWithSingleResult<TResponse> : IApiCommandWithSingleResult<TResponse>, IApiPostCommand where TResponse : class, IXmlParseableWithElementName, new()
+{
+    
+}
+
+/// <summary>
+/// The configuration for an API command with a list of strongly typed responses.
+/// </summary>
+/// <typeparam name="TResponse"></typeparam>
+public interface IApiPostCommandWithMultipleResults<TResponse> : IApiCommandWithMultipleResults<TResponse>, IApiPostCommand where TResponse : class, IXmlParseableWithElementName, new()
+{
+    
+}

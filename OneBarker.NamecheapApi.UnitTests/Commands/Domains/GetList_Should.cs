@@ -14,18 +14,6 @@ public class GetList_Should : CommonTestBase<GetList>
         
     }
     
-    /*
-    [Fact]
-    public void ExecuteSuccessfully()
-    {
-        var cmd   = new GetList(Config.ApiConfigWithLogging(_output));
-        Assert.True(cmd.IsValid());
-        var response = cmd.Execute();
-        _output.WriteLine(response.CommandResponse.RawXml);
-        Assert.Equal(OptionsForResponseStatus.Ok, response.Status);
-    }
-    */
-
     [Fact]
     public void BeValidForTesting()
         => TestValidConfig(CreateValidCommand());

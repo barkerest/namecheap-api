@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using OneBarker.NamecheapApi.Commands.Domains;
-using OneBarker.NamecheapApi.Commands.Params;
 using OneBarker.NamecheapApi.CommonModels;
-using OneBarker.NamecheapApi.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,23 +9,21 @@ namespace OneBarker.NamecheapApi.UnitTests.Commands.Domains;
 
 #pragma warning disable xUnit2013
 
-public class Create_Should : CommonTestBase<Create>
+public class SetContacts_Should : CommonTestBase<SetContacts>
 {
-    public Create_Should(ITestOutputHelper output) : base(output)
+    public SetContacts_Should(ITestOutputHelper output) : base(output)
     {
         
     }
 
     #region CreateValidCommand
 
-    protected override Create CreateValidCommand()
+    protected override SetContacts CreateValidCommand()
     {
         // default blank values are commented out.
-        return new Create(GoodConfig)
+        return new SetContacts(GoodConfig)
         {
             DomainName = "onebarker-dev.com",
-            YearsToRegister = 2,
-            //PromotionCode = "",
             Registrant =
             {
                 //OrganizationName = "",
@@ -101,43 +96,10 @@ public class Create_Should : CommonTestBase<Create>
                 //Fax                   = "",
                 EmailAddress          = "j.doe@example.com",
             },
-            //Billing = null,
-            //IdnCode = "",
-            //ExtendedAttributes = null,
-            //Nameservers = Array.Empty<string>(),
-            //AddFreeWhoisGuard = null,
-            //EnableWhoisGuard = null,
-            //PremiumPrice = null,
-            //EapFee = null,
         };
     }
     
     #endregion
-
-    #region CreateValidContact
-    private Contact CreateValidContact()
-    {
-        return new Contact()
-        {
-            //OrganizationName = "",
-            //JobTitle = "",
-            FirstName = "John",
-            LastName  = "Doe",
-            Address1  = "1 Center Court",
-            //Address2 = "",
-            City            = "Cleveland",
-            StateOrProvince = "OH",
-            //StateOrProvinceChoice = "",
-            PostalCode = "44115",
-            Country    = "US",
-            Phone      = "+1.8005554321",
-            //PhoneExt = "",
-            //Fax = "",
-            EmailAddress = "j.doe@example.com",
-        };
-    }
-    #endregion
-
 
     [Fact]
     public void BeValidForTesting()
@@ -159,36 +121,15 @@ public class Create_Should : CommonTestBase<Create>
     public void PermitValidDomainName(string domainName)
         => TestValidOption(c => c.DomainName, domainName);
     
-    [Theory]
-    [InlineData(Invalid21CharString)]
-    public void RejectInvalidPromotionCode(string promoCode)
-        => TestInvalidOption(c => c.PromotionCode, promoCode);
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
-    [InlineData("1")]
-    [InlineData("a")]
-    [InlineData(Valid20CharString)]
-    public void PermitValidPromotionCode(string promoCode)
-        => TestValidOption(x => x.PromotionCode, promoCode);
-
     private void TestInvalidOptionsForContact<TValue>(Expression<Func<Contact, TValue>> property, TValue value)
     {
         TestInvalidOptionsFor(
             property,
-            c => c.Billing = null,
             value,
             c => c.Registrant,
             c => c.Tech,
             c => c.Admin,
             c => c.AuxBilling
-        );
-        TestInvalidOptionsFor(
-            property,
-            c => c.Billing = CreateValidContact(),
-            value,
-            c => c.Billing
         );
     }
     
@@ -196,18 +137,11 @@ public class Create_Should : CommonTestBase<Create>
     {
         TestValidOptionsFor(
             property,
-            c => c.Billing = null,
             value,
             c => c.Registrant,
             c => c.Tech,
             c => c.Admin,
             c => c.AuxBilling
-        );
-        TestValidOptionsFor(
-            property,
-            c => c.Billing = CreateValidContact(),
-            value,
-            c => c.Billing
         );
     }
 
