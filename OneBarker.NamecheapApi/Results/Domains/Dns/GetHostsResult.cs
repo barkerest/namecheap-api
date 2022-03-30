@@ -19,7 +19,7 @@ public class GetHostsResult : IXmlParseableWithElementName, IReadOnlyList<DnsHos
         DomainName  = element.GetAttribute("Domain");
         UsingOurDns = element.GetAttributeAsBoolean("IsUsingOurDNS");
 
-        foreach (var child in element.ChildNodes.OfType<XmlElement>().Where(x => x.Name == "Host"))
+        foreach (var child in element.ChildNodes.OfType<XmlElement>().Where(x => x.Name.ToLower() == "host"))
         {
             _data.Add(child.To<DnsHostEntry>());
         }
