@@ -131,23 +131,23 @@ public class Contact : ICommandParam, IXmlParseable
     }
     
     /// <inheritdoc />
-    IEnumerable<KeyValuePair<string, string>> ICommandParam.GenerateParameters(string prefix)
+    IEnumerable<KeyValuePair<string, string>> ICommandParam.GenerateParameters(string prefix, string postfix)
     {
-        if (!string.IsNullOrWhiteSpace(OrganizationName)) yield return new KeyValuePair<string, string>(prefix + "OrganizationName", OrganizationName);
-        if (!string.IsNullOrWhiteSpace(JobTitle)) yield return new KeyValuePair<string, string>(prefix + "JobTitle", JobTitle);
-        yield return new KeyValuePair<string, string>(prefix + "FirstName", FirstName);
-        yield return new KeyValuePair<string, string>(prefix + "LastName", LastName);
-        yield return new KeyValuePair<string, string>(prefix + "Address1", Address1);
-        if (!string.IsNullOrWhiteSpace(Address2)) yield return new KeyValuePair<string, string>(prefix + "Address2", Address2);
-        yield return new KeyValuePair<string, string>(prefix + "City", City);
-        yield return new KeyValuePair<string, string>(prefix + "StateProvince", StateOrProvince);
-        if (!string.IsNullOrWhiteSpace(StateOrProvinceChoice)) yield return new KeyValuePair<string, string>(prefix + "StateProvinceChoice", StateOrProvinceChoice);
-        yield return new KeyValuePair<string, string>(prefix + "PostalCode", PostalCode);
-        yield return new KeyValuePair<string, string>(prefix + "Country", Country);
-        yield return new KeyValuePair<string, string>(prefix + "Phone", Phone);
-        if (!string.IsNullOrWhiteSpace(PhoneExt)) yield return new KeyValuePair<string, string>(prefix + "PhoneExt", PhoneExt);
-        if (!string.IsNullOrWhiteSpace(Fax)) yield return new KeyValuePair<string, string>(prefix + "Fax", Fax);
-        yield return new KeyValuePair<string, string>(prefix + "EmailAddress", EmailAddress);
+        if (!string.IsNullOrWhiteSpace(OrganizationName)) yield return new KeyValuePair<string, string>(prefix + "OrganizationName" + postfix, OrganizationName);
+        if (!string.IsNullOrWhiteSpace(JobTitle)) yield return new KeyValuePair<string, string>(prefix + "JobTitle" + postfix, JobTitle);
+        yield return new KeyValuePair<string, string>(prefix + "FirstName" + postfix, FirstName);
+        yield return new KeyValuePair<string, string>(prefix + "LastName" + postfix, LastName);
+        yield return new KeyValuePair<string, string>(prefix + "Address1" + postfix, Address1);
+        if (!string.IsNullOrWhiteSpace(Address2)) yield return new KeyValuePair<string, string>(prefix + "Address2" + postfix, Address2);
+        yield return new KeyValuePair<string, string>(prefix + "City" + postfix, City);
+        yield return new KeyValuePair<string, string>(prefix + "StateProvince" + postfix, StateOrProvince);
+        if (!string.IsNullOrWhiteSpace(StateOrProvinceChoice)) yield return new KeyValuePair<string, string>(prefix + "StateProvinceChoice" + postfix, StateOrProvinceChoice);
+        yield return new KeyValuePair<string, string>(prefix + "PostalCode" + postfix, PostalCode);
+        yield return new KeyValuePair<string, string>(prefix + "Country" + postfix, Country);
+        yield return new KeyValuePair<string, string>(prefix + "Phone" + postfix, Phone);
+        if (!string.IsNullOrWhiteSpace(PhoneExt)) yield return new KeyValuePair<string, string>(prefix + "PhoneExt" + postfix, PhoneExt);
+        if (!string.IsNullOrWhiteSpace(Fax)) yield return new KeyValuePair<string, string>(prefix + "Fax" + postfix, Fax);
+        yield return new KeyValuePair<string, string>(prefix + "EmailAddress" + postfix, EmailAddress);
     }
 
     void IXmlParseable.LoadFromXmlElement(XmlElement element)

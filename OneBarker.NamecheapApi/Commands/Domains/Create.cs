@@ -108,26 +108,26 @@ public class Create : CommandBase, IApiCommandWithSingleResult<CreateResult>
         yield return new KeyValuePair<string, string>("DomainName", DomainName);
         yield return new KeyValuePair<string, string>("Years", YearsToRegister.ToString());
         if (!string.IsNullOrWhiteSpace(PromotionCode)) yield return new KeyValuePair<string, string>("PromotionCode", PromotionCode);
-        foreach (var v in ((ICommandParam)Registrant).GenerateParameters("Registrant"))
+        foreach (var v in ((ICommandParam)Registrant).GenerateParameters("Registrant", ""))
         {
             yield return v;
         }
-        foreach (var v in ((ICommandParam)Tech).GenerateParameters("Tech"))
+        foreach (var v in ((ICommandParam)Tech).GenerateParameters("Tech", ""))
         {
             yield return v;
         }
-        foreach (var v in ((ICommandParam)Admin).GenerateParameters("Admin"))
+        foreach (var v in ((ICommandParam)Admin).GenerateParameters("Admin", ""))
         {
             yield return v;
         }
-        foreach (var v in ((ICommandParam)AuxBilling).GenerateParameters("AuxBilling"))
+        foreach (var v in ((ICommandParam)AuxBilling).GenerateParameters("AuxBilling", ""))
         {
             yield return v;
         }
 
         if (Billing is not null)
         {
-            foreach (var v in ((ICommandParam)Billing).GenerateParameters("Billing"))
+            foreach (var v in ((ICommandParam)Billing).GenerateParameters("Billing", ""))
             {
                 yield return v;
             }
@@ -137,7 +137,7 @@ public class Create : CommandBase, IApiCommandWithSingleResult<CreateResult>
         
         if (ExtendedAttributes is not null)
         {
-            foreach (var v in ExtendedAttributes.GenerateParameters(""))
+            foreach (var v in ExtendedAttributes.GenerateParameters("", ""))
             {
                 yield return v;
             }

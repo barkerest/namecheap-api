@@ -53,26 +53,26 @@ public class SetContacts : CommandBase, IApiCommandWithSingleResult<SetContactsR
     protected override IEnumerable<KeyValuePair<string, string>> GetAdditionalParameters()
     {
         yield return new KeyValuePair<string, string>("DomainName", DomainName);
-        foreach (var v in ((ICommandParam)Registrant).GenerateParameters("Registrant"))
+        foreach (var v in ((ICommandParam)Registrant).GenerateParameters("Registrant", ""))
         {
             yield return v;
         }
-        foreach (var v in ((ICommandParam)Tech).GenerateParameters("Tech"))
+        foreach (var v in ((ICommandParam)Tech).GenerateParameters("Tech", ""))
         {
             yield return v;
         }
-        foreach (var v in ((ICommandParam)Admin).GenerateParameters("Admin"))
+        foreach (var v in ((ICommandParam)Admin).GenerateParameters("Admin", ""))
         {
             yield return v;
         }
-        foreach (var v in ((ICommandParam)AuxBilling).GenerateParameters("AuxBilling"))
+        foreach (var v in ((ICommandParam)AuxBilling).GenerateParameters("AuxBilling", ""))
         {
             yield return v;
         }
         
         if (ExtendedAttributes is not null)
         {
-            foreach (var v in ExtendedAttributes.GenerateParameters(""))
+            foreach (var v in ExtendedAttributes.GenerateParameters("", ""))
             {
                 yield return v;
             }
