@@ -24,6 +24,8 @@ public class GetSetHosts : IApiTester
 
         logger.LogInformation($"The domain {Program.TestDomain} currently has {current.Count} host records.");
 
+        logger.LogDebug(string.Join("\r\n", current.Select(x => $"{x.RecordType} {x.HostName} {x.Address}")));
+
         foreach (var entry in current) setter.HostEntries.Add(entry);
 
         var defEntry = setter.HostEntries.FirstOrDefault(x => x.RecordType == DnsHostEntryRecordType.A && x.HostName == "@");

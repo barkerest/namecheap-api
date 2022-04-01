@@ -99,6 +99,8 @@ public class SetHosts : CommandBase, IApiCommandWithSingleResult<SetHostsResult>
         }
 
         if (EmailType.HasValue) yield return new KeyValuePair<string, string>("EmailType", EmailType.GetValueOrDefault().ToString().ToUpper());
+        
+        // FIXME: Namecheap accepts CAA records like '0 issue "some.address"'
         if (Flag.HasValue) yield return new KeyValuePair<string, string>("Flag", Flag.GetValueOrDefault().ToString());
         if (Tag.HasValue) yield return new KeyValuePair<string, string>("Tag", Tag.GetValueOrDefault().ToString().ToLower());
     }

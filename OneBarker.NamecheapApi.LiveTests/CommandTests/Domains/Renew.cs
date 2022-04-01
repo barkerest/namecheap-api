@@ -15,8 +15,10 @@ public class Renew : IApiTester
             Years      = 1
         };
 
+        /*
         var result = cmd.GetResult();
         if (result.DomainName != cmd.DomainName) throw new ApplicationException("Result does not match request.");
         logger.LogInformation($"Renewal of {cmd.DomainName} was {result.Success}.");
+        */
     }
 }
